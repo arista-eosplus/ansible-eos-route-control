@@ -32,13 +32,13 @@ The tasks in this role are driven by the ``routemaps``, ``acls`` and
 |         Key | Type                               | Notes                                                                                                                                                                           |
 |------------:|------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 |        name | string (required)                  | The name of the routemap to manage.                                                                                                                                             |
-|      action | choices: [permit, deny] (required) | The action associated with the routemap name.                                                                                                                                   |
+|      action | choices:  permit, deny  (required) | The action associated with the routemap name.                                                                                                                                   |
 |       seqno | int (required)                     | The sequence number of the rule that this entry corresponds to.                                                                                                                 |
 | description | string                             | The description for this routemap entry.                                                                                                                                        |
 |       match | list                               | The list of match statements that define the routemap entry. The match statements should be a list of match statements without the word 'match' at the beginning of the string. |
 |         set | list                               | The list of set statements that define the routemap entry. The set statements should be a list of set statements without the word 'set' at the beginning of the string.         |
 |    continue | int                                | The statement defines the next routemap clause to evaluate.                                                                                                                     |
-|       state | choices: [present*, absent]        | Set the state for the routemap configuration.                                                                                                                                   |
+|       state | choices: present*, absent          | Set the state for the routemap configuration.                                                                                                                                   |
 
 
 **acls** (list) each entry contains the following keys:
