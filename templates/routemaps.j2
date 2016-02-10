@@ -1,0 +1,151 @@
+! templates/routemaps.j2
+#jinja2: trim_blocks: False
+#jinja2: lstrip_blocks: False
+
+{% set name = item.name %}
+{% set action = item.action %}
+{% set seqno = item.seqno %}
+{% set state = item.state | default(default_routemap_state) %}
+
+{% set routemap = "route-map %s %s %s" % (name, action, seqno) %}
+
+{% set rm_block = base_config | config_block(routemap, indent=3) %}
+{% if rm_block == [] %}
+   {# config block found, but empty - enter a value to mark it as found #}
+   {% set rm_block = "_empty_route_map_block_" %}
+{% endif %}
+
+{% if state == 'absent' %} {# remove the routemap if it exists #}
+   {% if rm_block %}
+
+no {{ routemap }}
+
+   {% endif %}
+
+{% elif state == 'present' %} {# make sure routemap configuration matches #}
+
+route-map {{ name }} {{ action }} {{ seqno }}
+
+   {# ----------------------------------------------------------------------- #}
+   {% if rm_block %} {# route-map exists - make sure configuration is correct #}
+
+      {# make description changes as needed #}
+      {% if item.description is defined %}
+         {% set rm_desc = rm_block | join('\n') | re_search("^description (.*)$") %}
+
+         {% if item.description %}
+            {% if rm_desc and rm_desc.group(1) != item.description %}
+
+   no description
+
+            {% endif %}
+
+   description {{ item.description }}
+
+         {% elif item.description == '' %}
+            {% if rm_desc %}
+
+   no description
+
+            {% endif %}
+         {% endif %}
+      {% endif %} {# make description changes #}
+
+      {# set continue value if needed #}
+      {% if item.continue is defined %}
+         {% if item.continue %}
+
+   continue {{ item.continue }}
+
+         {% elif item.continue == '' %}
+            {% set rm_cont = rm_block | join('\n') | re_search("^continue (\d*)$") %}
+            {% if rm_cont %}
+
+   no continue
+
+            {% endif %}
+         {% endif %}
+      {% endif %} {# set continue value #}
+
+      {# set match statements as needed #}
+      {% if item.match is defined %}
+         {# remove extra match statements #}
+         {% set current_match = rm_block | join('\n') | re_findall("^match (.*)$") %}
+         {% set to_remove = current_match | difference(item.match) %}
+         {% for match in to_remove %}
+
+   no match {{ match }}
+
+         {% endfor %}
+
+         {# add requested match statements #}
+         {% for match in item.match %}
+
+   match {{ match }}
+
+         {% endfor %}
+      {% endif %} {# set match statements #}
+
+      {# set 'set' statements as needed #}
+      {% if item.set is defined %}
+         {# remove extra set statements #}
+         {% set current_sets = rm_block | join('\n') | re_findall("^set (.*)$") %}
+         {% set to_remove = current_sets | difference(item.set) %}
+         {% for set_itm in to_remove %}
+
+   no set {{ set_itm }}
+
+         {% endfor %}
+
+         {# add requested set statements #}
+         {% for set_itm in item.set %}
+
+   set {{ set_itm }}
+
+         {% endfor %}
+      {% endif %} {# set 'set' statements #}
+
+   {# -------------------------------------------------- #}
+   {% else %} {# route-map doesn't exist - initialize it #}
+
+   no description
+
+      {# set description #}
+      {% if item.description is defined and item.description %}
+
+   description {{ item.description }}
+
+      {% endif %} {# if item.description #}
+
+      {# set continue value #}
+      {% if item.continue is defined and item.continue %}
+
+   continue {{ item.continue }}
+
+      {% endif %} {# if item.continue #}
+
+      {# set match statements #}
+      {% if item.match is defined %}
+         {% for match in item.match %}
+
+   match {{ match }}
+
+         {% endfor %}
+      {% endif %} {# if item.match #}
+
+      {# set 'set' statements #}
+      {% if item.set is defined %}
+         {% for set_itm in item.set %}
+
+   set {{ set_itm }}
+
+         {% endfor %}
+      {% endif %} {# if item.set #}
+   {% endif %} {# if rm_block #}
+
+   {# ----------------------------------- #}
+   {# ...and save any changes with 'exit' #}
+
+   exit
+
+{% endif %}
