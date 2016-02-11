@@ -5,7 +5,7 @@
 {% set ip_dest = item.ip_dest %}
 {% set next_hop = item.next_hop %}
 
-{% set state = item.state | default(default_staticroute_state) %}
+{% set state = item.state | default(default_static_route_state) %}
 
 {% set next_hop_ip = item.next_hop_ip | default('') %}
 {% if next_hop_ip %}
