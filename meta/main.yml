@@ -32,9 +32,19 @@
 ---
 galaxy_info:
   author: EOS+ CS
-  description: Role for managing EOS ACLs, Routemaps and IPv4 static routing configuration
+  description: Role for managing EOS Routemaps and IPv4 static routing configuration
   company: Arista
   license: BSD-3
+  platforms:
+    - name: eos
+      versions:
+        - all
   min_ansible_version: 2.1.0
   categories:
     - networking
+  galaxy_tags:
+    - arista
+    - eos
+    - networking
+
+dependencies: []

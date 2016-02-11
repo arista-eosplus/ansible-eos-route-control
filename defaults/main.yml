@@ -1,3 +1,6 @@
 ---
 # defaults file for eos-route-control
 default_routemap_state: present
+default_static_route_state: present
+default_static_route_dist: 1
+default_static_route_tag: 0
