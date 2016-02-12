@@ -25,7 +25,7 @@
    {% set static_route = "ip route " + ip_dest + " " + next_hop +
             next_hop_ip + dist %}
 
-   {% set remove_route = _eos_config_ | re_search("^%s( .*)$" % static_route) %}
+   {% set remove_route = _eos_config | re_search("^%s( .*)$" % static_route) %}
    {% if remove_route %}
 
 no {{ static_route }}

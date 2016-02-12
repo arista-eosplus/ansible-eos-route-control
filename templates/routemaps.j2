@@ -9,7 +9,7 @@
 
 {% set routemap = "route-map %s %s %s" % (name, action, seqno) %}
 
-{% set rm_block = _eos_config_ | config_block(routemap, indent=3) %}
+{% set rm_block = _eos_config | config_block(routemap, indent=3) %}
 {% if rm_block == [] %}
    {# config block found, but empty - enter a value to mark it as found #}
    {% set rm_block = "_empty_route_map_block_" %}
