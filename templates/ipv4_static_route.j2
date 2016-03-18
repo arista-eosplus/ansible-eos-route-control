@@ -1,0 +1,54 @@
+! templates/ipv4_static_route.j2
+#jinja2: trim_blocks: False
+#jinja2: lstrip_blocks: False
+
+{% set ip_dest = item.ip_dest %}
+{% set next_hop = item.next_hop %}
+
+{% set state = item.state | default(default_static_route_state) %}
+
+{% set next_hop_ip = item.next_hop_ip | default('') %}
+{% if next_hop_ip %}
+   {% set next_hop_ip = " " + next_hop_ip %}
+{% endif %}
+
+{# ----------------------------------------------------------- #}
+{% if state == 'absent' %} {# remove the ip route if it exists #}
+   {# If distance not specified, do not default when setting absent state #}
+   {% set dist = item.distance | default('') %}
+   {% if dist %}
+      {% set dist = " %d" % dist %}
+   {% endif %}
+
+   {# We only match on ip_dest, next_hop, next_hop_ip, and distance #}
+   {# because for the 'no' command, tag and name are ignored by the switch #}
+   {% set static_route = "ip route " + ip_dest + " " + next_hop +
+            next_hop_ip + dist %}
+
+   {% set remove_route = _eos_config | re_search("^%s( .*)$" % static_route) %}
+   {% if remove_route %}
+
+no {{ static_route }}
+
+   {% endif %}
+
+{# ---------------------------------------------------- #}
+{% elif state == 'present' %} {# configure the ip route #}
+
+   {% set dist = item.distance | default(default_static_route_dist) %}
+   {% set dist = " %d" % dist %}
+
+   {% set tag = item.tag | default(default_static_route_tag) %}
+   {% set tag = " tag %d" % tag|int %};
+
+   {% set route_name = item.route_name | default('') %}
+   {% if route_name %}
+      {% set route_name = " name %s" % route_name %}
+   {% endif %}
+
+   {% set static_route = "ip route " + ip_dest + " " + next_hop +
+            next_hop_ip + dist + tag + route_name %}
+
+{{ static_route }}
+
+{% endif %}
