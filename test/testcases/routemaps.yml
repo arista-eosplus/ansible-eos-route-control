@@ -1,0 +1,19 @@
+---
+defaults:
+  module: routemaps
+
+testcases:
+  - name: XXX XXX
+    arguments:
+      routemaps:
+        enable: true
+    setup: |
+      no router bgp
+      ip routing
+    present: |
+      router bgp 111
+         no shutdown
+         no router-id
+         maximum-paths 1 ecmp 128
+         bgp log-neighbor-changes
+         timers bgp 60 180
