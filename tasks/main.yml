@@ -43,7 +43,7 @@
 
 - name: Arista EOS IPv4 Static Route resources
   eos_template:
-    src: ipv4_static_route.j2
+    src: ipv4_static_routes.j2
     include_defaults: true
     config: "{{ _eos_config | default(omit) }}"
     auth_pass: "{{ auth_pass | default(omit) }}"
