@@ -1,0 +1,452 @@
+---
+defaults:
+  module: routemaps
+
+testcases:
+  - name: Add generic routemaps
+    arguments:
+      routemaps:
+        - name: newmap01
+          action: permit
+          seqno: 31
+          description: newmap01 has just been added
+          continue: 35
+          match:
+            - as 20
+            - metric 25
+            - tag 30
+          set:
+            - distance 50
+            - tag 100
+        - name: newmap81
+          action: deny
+          seqno: 81
+          description: newmap81 has just been added
+          continue: 85
+          match:
+            - as 20
+            - metric 25
+            - tag 30
+          set:
+            - distance 50
+            - tag 100
+    setup: |
+      no route-map newmap01
+      no route-map newmap81
+    present: |
+      route-map newmap01 permit 31
+         description newmap01 has just been added
+         continue 35
+         match as 20
+         match metric 25
+         match tag 30
+         set distance 50
+         set tag 100
+      route-map newmap81 deny 81
+         description newmap81 has just been added
+         continue 85
+         match as 20
+         match metric 25
+         match tag 30
+         set distance 50
+         set tag 100
+
+  - name: Add a routemap with no details
+    arguments:
+      routemaps:
+        - name: newmap02
+          action: permit
+          seqno: 32
+    setup: |
+      no route-map newmap02
+    present: |
+      route-map newmap02 permit 32
+
+  - name: Update routemap description
+    arguments:
+      routemaps:
+        - name: newmap03
+          action: permit
+          seqno: 33
+          description: newmap03 changed description
+    setup: |
+      no route-map newmap03
+      route-map newmap03 permit 33
+      description newmap03 initial description
+      exit
+    present: |
+      route-map newmap03 permit 33
+         description newmap03 changed description
+    absent: |
+      route-map newmap03 permit 33
+         description newmap03 initial description
+
+  - name: Delete routemap description
+    arguments:
+      routemaps:
+        - name: newmap04
+          action: permit
+          seqno: 34
+          description: ''
+    setup: |
+      no route-map newmap04
+      route-map newmap04 permit 34
+      description newmap04 initial description
+      exit
+    present: |
+      route-map newmap04 permit 34
+    absent: |
+      route-map newmap04 permit 34
+         description newmap04 initial description
+
+  - name: Update routemap continue
+    arguments:
+      routemaps:
+        - name: newmap05
+          action: permit
+          seqno: 35
+          continue: 36
+    setup: |
+      no route-map newmap05
+      route-map newmap05 permit 35
+      continue 86
+      exit
+    present: |
+      route-map newmap05 permit 35
+         continue 36
+    absent: |
+      route-map newmap05 permit 35
+         continute 86
+
+  - name: Delete routemap continue
+    arguments:
+      routemaps:
+        - name: newmap06
+          action: permit
+          seqno: 36
+          continue: ''
+    setup: |
+      no route-map newmap06
+      route-map newmap06 permit 36
+      continue 37
+      exit
+    present: |
+      route-map newmap06 permit 36
+    absent: |
+      route-map newmap06 permit 36
+         continute 37
+
+  - name: Set routemap match as
+    arguments:
+      routemaps:
+        - name: newmap07
+          action: permit
+          seqno: 37
+          match:
+            - as 20
+    setup: |
+      no route-map newmap07
+    present: |
+      route-map newmap07 permit 37
+         match as 20
+
+  - name: Set routemap match tag
+    arguments:
+      routemaps:
+        - name: newmap08
+          action: permit
+          seqno: 38
+          match:
+            - tag 30
+    setup: |
+      no route-map newmap08
+    present: |
+      route-map newmap08 permit 38
+         match tag 30
+
+  - name: Set routemap match metric
+    arguments:
+      routemaps:
+        - name: newmap09
+          action: permit
+          seqno: 39
+          match:
+            - metric 40
+    setup: |
+      no route-map newmap09
+    present: |
+      route-map newmap09 permit 39
+         match metric 40
+
+  - name: Modify routemap match statements
+    arguments:
+      routemaps:
+        - name: newmap10
+          action: permit
+          seqno: 40
+          match:
+            - as 20
+            - tag 30
+            - metric 40
+    setup: |
+      no route-map newmap10
+      route-map newmap10 permit 40
+      match as 15
+      match tag 25
+      match metric 35
+      exit
+    present: |
+      route-map newmap10 permit 40
+         match as 20
+         match tag 30
+         match metric 40
+    absent: |
+      route-map newmap10 permit 40
+         match as 15
+         match tag 25
+         match metric 35
+
+  - name: Delete routemap match statements
+    arguments:
+      routemaps:
+        - name: newmap11
+          action: permit
+          seqno: 41
+          match: []
+    setup: |
+      no route-map newmap11
+      route-map newmap11 permit 41
+      match as 15
+      match tag 25
+      match metric 35
+      exit
+    present: |
+      route-map newmap11 permit 41
+    absent: |
+      route-map newmap11 permit 41
+         match as 15
+         match tag 25
+         match metric 35
+
+  - name: Set routemap set distance
+    arguments:
+      routemaps:
+        - name: newmap12
+          action: permit
+          seqno: 42
+          set:
+            - distance 20
+    setup: |
+      no route-map newmap12
+    present: |
+      route-map newmap12 permit 42
+         set distance 20
+
+  - name: Set routemap set tag
+    arguments:
+      routemaps:
+        - name: newmap13
+          action: permit
+          seqno: 43
+          set:
+            - tag 30
+    setup: |
+      no route-map newmap13
+    present: |
+      route-map newmap13 permit 43
+         set tag 30
+
+  - name: Modify routemap set statements
+    arguments:
+      routemaps:
+        - name: newmap14
+          action: permit
+          seqno: 44
+          set:
+            - distance 20
+            - tag 30
+    setup: |
+      no route-map newmap14
+      route-map newmap14 permit 44
+      set distance 15
+      set tag 25
+      exit
+    present: |
+      route-map newmap14 permit 44
+         set distance 20
+         set tag 30
+    absent: |
+      route-map newmap14 permit 44
+         set distance 15
+         set tag 25
+
+  - name: Delete routemap set statements
+    arguments:
+      routemaps:
+        - name: newmap15
+          action: permit
+          seqno: 45
+          set: []
+    setup: |
+      no route-map newmap15
+      route-map newmap15 permit 45
+      set distance 15
+      set tag 25
+      exit
+    present: |
+      route-map newmap15 permit 45
+    absent: |
+      route-map newmap15 permit 45
+         set distance 15
+         set tag 25
+
+  - name: Modify routemap actions
+    arguments:
+      routemaps:
+        - name: newmap16
+          action: permit
+          seqno: 46
+        - name: newmap86
+          action: deny
+          seqno: 86
+    setup: |
+      no route-map newmap16
+      no route-map newmap86
+      route-map newmap16 deny 46
+      route-map newmap86 permit 86
+      exit
+    present: |
+      route-map newmap16 permit 46
+      route-map newmap86 deny 86
+    absent: |
+      route-map newmap16 deny 46
+      route-map newmap86 permit 86
+
+  - name: Remove routemaps
+    arguments:
+      routemaps:
+        - name: newmap17
+          action: permit
+          seqno: 47
+          state: absent
+        - name: newmap87
+          action: deny
+          seqno: 87
+          state: absent
+    setup: |
+      no route-map newmap17
+      no route-map newmap87
+      route-map newmap17 permit 47
+      route-map newmap87 deny 87
+      exit
+    absent: |
+      route-map newmap17 permit 47
+      route-map newmap87 deny 87
+
+  - name: Add, modify, remove routemaps
+    arguments:
+      routemaps:
+        - name: newmap18
+          action: permit
+          seqno: 48
+          description: newmap18 has just been added
+          continue: 100
+          match:
+            - as 20
+            - metric 25
+            - tag 30
+          set:
+            - distance 50
+            - tag 100
+        - name: newmap19
+          action: permit
+          seqno: 49
+          state: absent
+        - name: newmap20
+          action: deny
+          seqno: 50
+          state: absent
+        - name: newmap21
+          action: deny
+          seqno: 51
+          description: incorrect action value prevents deletion
+          state: absent
+        - name: newmap22
+          action: deny
+          seqno: 52
+          description: newmap22 has just been added
+          continue: 101
+          match:
+            - metric 255
+          set:
+            - distance 40
+        - name: newmap23
+          action: permit
+          seqno: 53
+          description: newmap23 has been changed
+          continue: 203
+          match:
+            - metric 203
+            - tag 200
+          set:
+            - distance 50
+            - tag 200
+        - name: newmap24
+          action: deny
+          seqno: 54
+          description: add newmap24 deny 54 different from newmap24 deny 154
+    setup: |
+      no route-map newmap18
+      route-map newmap19 permit 49
+      description newmap19 will be deleted
+      route-map newmap20 deny 50
+      description newmap20 will be deleted
+      route-map newmap21 permit 51
+      description deleting this routemap with action deny will fail
+      no route-map newmap22
+      no route-map newmap23
+      route-map newmap23 deny 53
+      description newmap23 will be changed
+      continue 203
+      match as 53
+      match metric 103
+      set distance 40
+      no route-map newmap24
+      route-map newmap24 deny 154
+      description this is not the same as newmap24 deny 54
+      exit
+    present: |
+      route-map newmap18 permit 48
+         description newmap18 has just been added
+         continue 100
+         match as 20
+         match metric 25
+         match tag 30
+         set distance 50
+         set tag 100
+      route-map newmap21 permit 51
+         description deleting this routemap with action deny will fail
+      route-map newmap22 deny 52
+         description newmap22 has just been added
+         continue 101
+         match metric 255
+         set distance 40
+      route-map newmap23 permit 53
+         description newmap23 has been changed
+         continue 203
+         match metric 203
+         match tag 200
+         set distance 50
+         set tag 200
+      route-map newmap24 deny 154
+         description this is not the same as newmap24 deny 54
+      route-map newmap24 deny 54
+         description add newmap24 deny 54 different from newmap24 deny 154
+    absent: |
+      route-map newmap19 permit 49
+      route-map newmap20 deny 50
+      route-map newmap23 permit 53
+         description newmap23 will be changed
+         match as 53
+         match metric 103
+         match distance 40

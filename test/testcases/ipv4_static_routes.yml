@@ -1,0 +1,155 @@
+---
+defaults:
+  module: ipv4_static_routes
+
+testcases:
+  - name: Add static routes
+    arguments:
+      ipv4_static_routes:
+        - ip_dest: 21.21.21.0/24
+          next_hop: 192.168.1.2
+          distance: 21
+          tag: 21
+          route_name: add_rte_21
+        - ip_dest: 22.22.22.0/24
+          next_hop: 192.168.1.2
+          distance: 22
+          tag: 22
+          route_name: add_rte_22
+    setup: |
+      no ip route 21.21.21.0/24 192.168.1.2
+      no ip route 22.22.22.0/24 192.168.1.2
+    present: |
+      ip route 21.21.21.0/24 192.168.1.2 21 tag 21 name add_rte_21
+      ip route 22.22.22.0/24 192.168.1.2 22 tag 22 name add_rte_22
+
+  - name: Remove static routes
+    arguments:
+      ipv4_static_routes:
+        - ip_dest: 23.23.23.0/24
+          next_hop: 192.168.1.2
+          distance: 23
+          tag: 23
+          route_name: rmv_rte_23
+          state: absent
+        - ip_dest: 24.24.24.0/24
+          next_hop: 192.168.1.2
+          distance: 24
+          tag: 24
+          route_name: rmv_rte_24_tag_name_ignored
+          state: absent
+        - ip_dest: 25.25.25.0/24
+          next_hop: 192.168.1.2
+          distance: 25
+          state: absent
+    setup: |
+      ip route 23.23.23.0/24 192.168.1.2 23 tag 23 name rmv_rte_23
+      ip route 24.24.24.0/24 192.168.1.2 24 tag 240 name some_other_name
+      ip route 25.25.25.0/24 192.168.1.2 25 tag 25 name rmv_route_25
+    absent: |
+      ip route 23.23.23.0/24 192.168.1.2 23 tag 23 name rmv_rte_23
+      ip route 24.24.24.0/24 192.168.1.2 24 tag 240 name some_other_name
+      ip route 24.24.24.0/24 192.168.1.2 24 tag 24 name rmv_rte_24_tag_name_ignored
+      ip route 25.25.25.0/24 192.168.1.2 25 tag 25 name rmv_route_25
+      ip route 25.25.25.0/24 192.168.1.2 25
+
+  - name: Modify static routes
+    arguments:
+      ipv4_static_routes:
+        - ip_dest: 26.26.26.0/24
+          next_hop: 192.168.1.2
+          distance: 26
+          tag: 26
+          route_name: mod_rte_26
+        - ip_dest: 27.27.0.0/16
+          next_hop: 192.168.1.2
+          distance: 27
+          tag: 27
+          route_name: mod_rte_27
+        - ip_dest: 28.0.0.0/8
+          next_hop: 192.168.1.2
+          distance: 28
+          tag: 28
+          route_name: mod_rte_28
+        - ip_dest: 29.29.29.0/24
+          next_hop: 192.168.1.2
+          distance: 29
+          route_name: rte_29_dist_29
+    setup: |
+      ip route 26.26.26.0/24 192.168.1.2 26 tag 261 name previous_rte_26
+      ip route 27.27.0.0/16 192.168.1.2 27 tag 27 name previous_rte_27
+      ip route 28.0.0.0/8 192.168.1.2 28 tag 127 name mod_rte_28
+      no ip route 29.29.29.0/24 192.168.1.2 29 tag 0 name rte_29_dist_29
+      ip route 29.29.29.0/24 192.168.1.2 99 name rte_29_dist_99
+    present: |
+      ip route 26.26.26.0/24 192.168.1.2 26 tag 26 name mod_rte_26
+      ip route 27.27.0.0/16 192.168.1.2 27 tag 27 name mod_rte_27
+      ip route 28.0.0.0/8 192.168.1.2 28 tag 28 name mod_rte_28
+      ip route 29.29.29.0/24 192.168.1.2 29 tag 0 name rte_29_dist_29
+      ip route 29.29.29.0/24 192.168.1.2 99 tag 0 name rte_29_dist_99
+    absent: |
+      ip route 26.26.26.0/24 192.168.1.2 26 tag 261 name previous_rte_26
+      ip route 27.27.0.0/16 192.168.1.2 27 tag 27 name previous_rte_27
+      ip route 28.0.0.0/8 192.168.1.2 28 tag 127 name mod_rte_28
+
+  - name: Add, modify, remove static routes
+    arguments:
+      ipv4_static_routes:
+        - ip_dest: 30.30.30.0/24
+          next_hop: 192.168.1.2
+          distance: 30
+          tag: 30
+          route_name: add_rte_30
+        - ip_dest: 31.31.31.31/32
+          next_hop: 192.168.1.2
+          distance: 31
+        - ip_dest: 32.32.0.0/16
+          next_hop: 192.168.1.2
+          distance: 32
+          route_name: add_rte_32
+        - ip_dest: 33.33.0.0/16
+          next_hop: 192.168.1.2
+          distance: 33
+          tag: 33
+          route_name: mod_rte_33
+        - ip_dest: 34.34.0.0/16
+          next_hop: 192.168.1.2
+          distance: 34
+          tag: 34
+          route_name: mod_rte_34
+        - ip_dest: 35.35.0.0/16
+          next_hop: 192.168.1.2
+          distance: 35
+          state: absent
+        - ip_dest: 36.36.0.0/16
+          next_hop: 192.168.1.2
+          distance: 36
+          state: absent
+        - ip_dest: 37.37.0.0/16
+          next_hop: 192.168.1.2
+          distance: 37
+          tag: 37
+          name: keep_rte_dist_137
+          state: absent
+    setup: |
+      no ip route 30.30.30.0/24 192.168.1.2 30
+      no ip route 31.31.31.31/32 192.168.1.2 31
+      no ip route 32.32.0.0/16 192.168.1.2 32
+      ip route 33.33.0.0/16 192.168.1.2 33
+      ip route 34.34.0.0/16 192.168.1.2 34 tag 44 name mod_rte_44_34
+      ip route 35.35.0.0/16 192.168.1.2 35 tag 35 name rmv_rte_35
+      ip route 36.36.0.0/16 192.168.1.2 36
+      ip route 37.37.0.0/16 192.168.1.2 137 tag 37 name keep_rte_dist_137
+    present: |
+      ip route 30.30.30.0/24 192.168.1.2 30 tag 30 name add_rte_30
+      ip route 31.31.31.31/32 192.168.1.2 31 tag 0
+      ip route 32.32.0.0/16 192.168.1.2 32 tag 0 name add_rte_32
+      ip route 33.33.0.0/16 192.168.1.2 33 tag 33 name mod_rte_33
+      ip route 34.34.0.0/16 192.168.1.2 34 tag 34 name mod_rte_34
+      ip route 37.37.0.0/16 192.168.1.2 137 tag 37 name keep_rte_dist_137
+    absent: |
+      ip route 33.33.0.0/16 192.168.1.2 33 tag 0
+      ip route 34.34.0.0/16 192.168.1.2 34 tag 44 name mod_rte_44_34
+      ip route 35.35.0.0/16 192.168.1.2 35 tag 35 name rmv_rte_35
+      ip route 36.36.0.0/16 192.168.1.2 36 tag 0
+      ip route 37.37.0.0/16 192.168.1.2 37 tag 37 name keep_rte_dist_137

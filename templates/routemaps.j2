@@ -7,24 +7,54 @@
 {% set seqno = item.seqno %}
 {% set state = item.state | default(default_routemap_state) %}
 
-{% set routemap = "route-map %s %s %s" % (name, action, seqno) %}
+{# set not_action to the opposite of the action that was passed in #}
+{% if action == 'permit' %}
+   {% set not_action = 'deny' %}
+{% else %}
+   {% set not_action = 'permit' %}
+{% endif %}
 
+{# define the route-map block header for the requested action #}
+{# as well as the opposite action #}
+{% set routemap = "route-map %s %s %s" % (name, action, seqno) %}
+{% set routemap_other_action = "route-map %s %s %s" % (name, not_action, seqno) %}
+
+{# look for the route-map block in the config. if the requested #}
+{# route-map header is not found, look for the opposite action header. #}
+{# if the opposite action is found, consider it the same as if the #}
+{# requested action was found, so that match and set strings will be #}
+{# removed correctly. true_block indicates whether the block found was #}
+{# an exact match to the specification or was a match to the opposite action. #}
+{% set true_block = true %}
 {% set rm_block = _eos_config | config_block(routemap, indent=3) %}
+{% if rm_block == None %}
+   {% set true_block = false %}
+   {% set rm_block = _eos_config | config_block(routemap_other_action, indent=3) %}
+{% endif %}
 {% if rm_block == [] %}
    {# config block found, but empty - enter a value to mark it as found #}
    {% set rm_block = "_empty_route_map_block_" %}
 {% endif %}
 
 {% if state == 'absent' %} {# remove the routemap if it exists #}
-   {% if rm_block %}
+   {% if true_block %}
 
 no {{ routemap }}
 
-   {% endif %}
+   {% endif %} {# true_block #}
 
 {% elif state == 'present' %} {# make sure routemap configuration matches #}
 
-route-map {{ name }} {{ action }} {{ seqno }}
+{{ routemap }}
+
+   {% if not true_block %}
+   {# if we are changing the action on the routemap, duplicate the #}
+   {# route-map entry to avoid deleting an empty block if this is the #}
+   {# only operation #}
+
+   {{ routemap }}
+
+   {% endif %} {# not true_block #}
 
    {# ----------------------------------------------------------------------- #}
    {% if rm_block %} {# route-map exists - make sure configuration is correct #}
