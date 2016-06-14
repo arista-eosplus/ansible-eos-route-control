@@ -35,6 +35,7 @@
     transport: 'cli'
     use_ssl: "{{ use_ssl | default(omit) }}"
     username: "{{ username | default(omit) }}"
+  notify: save running config
   when:
     item.name is defined and
     item.action is defined and
@@ -55,6 +56,7 @@
     transport: 'cli'
     use_ssl: "{{ use_ssl | default(omit) }}"
     username: "{{ username | default(omit) }}"
+  notify: save running config
   when:
     item.ip_dest is defined and
     item.next_hop is defined
