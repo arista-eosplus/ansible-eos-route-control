@@ -1,9 +1,10 @@
+
 Arista Roles for Ansible - Development Guidelines
 =================================================
 
 #### Table of Contents
 
-1. [Running Role Tests] (#running-role-tests)
+1. [Executing Test Cases for an Arista Ansible Role] (#executing-test-cases-for-an-arista-ansible-role)
    * [Overview] (#overview)
    * [Details] (#details)
 2. [Developing Arista Roles For Ansible] (#developing-arista-roles-for-ansible)
@@ -12,32 +13,33 @@ Arista Roles for Ansible - Development Guidelines
     * [Development for arista-ansible-role-test] (#development-for-arista-ansible-role-test)
 
 
-Running role tests
-------------------
+
+Executing Test Cases for an Arista Ansible Role
+-----------------------------------------------
 
 #### Overview
 
 To execute a role test suite:
 
-- Update the test/fixtures/hosts file with the name(s) of your test devices.
-- Update the test/arista-ansible-role-test/group_vars/all.yml file with
-  the connection information for your devices.
+- Update test/fixtures/hosts with the name(s) of your test devices.
+- Update test/arista-ansible-role-test/group_vars/all.yml with the
+  connection information for your devices.
 - Execute `make tests` from the root of the role directory.
 
 #### Details
 
 This test framework should be used in a cloned copy of an Arista
-ansible-eos-* Ansible role. The framework will *not* execute properly in an
+ansible-eos-* Ansible role. The framework will ***not*** execute properly in an
 ansible-galaxy installation of the role.
 
-The framework is included as a subtree within the Arista role, in the
-test/arista-ansible-role-test directory.
+The arista-ansible-role-test framework is included as a subtree within
+the Arista role. The framework is maintained in a separate repo located
+at https://github.com/arista-eosplus/arista-ansible-role-test.
 
 To use the test framework in your local environment, you will first need
-to update the test/fixtures/hosts file (in the role repository) and the
-test/arista-ansible-role-test/group_vars/all.yml file (in the test framework
-directory). The hosts file should list your testing devices under the
-`[test_hosts]` section. The all.yml file should reflect the proper connection
+to update test/fixtures/hosts and test/arista-ansible-role-test/group_vars/all.yml.
+The hosts file should list your testing devices under the [test_hosts] 
+section. The all.yml file should reflect the proper connection
 parameters for your devices under the provider mapping.
 
 Once the files have been updated for your local environment, execute
@@ -46,14 +48,15 @@ the role.
 
 To run a specific set of tests from the test suite, set the environment
 variable `ANSIBLE_ROLE_TEST_CASES` to the name(s) of the file(s) under
-test/testcases that you wish to execute (excluding the yml extension). So,
-for example, if the testcases folder contains test files named first.yml,
+test/testcases that you wish to execute (excluding the yml extension).
+For example, if the testcases folder contains test files named first.yml,
 second.yml, and third.yml, setting `ANSIBLE_ROLE_TEST_CASES=first,third`
 would run only the tests in first.yml and third.yml.
 
 The test framework executes the following steps when processing a test suite:
-- The current state of each device is backed /mnt/flash directory on the
-  device using the `copy running-config <backup_file>` command.
+- The current state of each device is backed up in the /mnt/flash directory
+  on the device using the `copy running-config <backup_file>` command.
+- The current startup-config for each device is also backed up.
 - Test cases are gathered from every file under test/testcases that matches
   the `ANSIBLE_ROLE_TEST_CASES` pattern, or all files if the variable is unset.
 - Each test case is executed:
@@ -61,8 +64,9 @@ The test framework executes the following steps when processing a test suite:
   - The test case is executed against the role, verifying idempotency and
     any present or absent configuration that should exist on the device.
   - Test case teardown is performed, if any exists.
-- The configuration for each device is restored from the previously stored
-  backup.
+- The configuration for each device is restored from the backup file
+  generated at test initialization.
+- The startup-config for each device is restored from its backup location.
 - The backup files are removed from each device, leaving the device in the
   state in which it was before the tests.
 
@@ -70,9 +74,10 @@ To prevent restoring device configuration after tests have run (to debug
 a failing test case, for example), set the environment variable
 `NO_ANSIBLE_ROLE_TEST_TEARDOWN` to True (or any value that would evaluate to true).
 In this case, restoring the device configuration may be accomplished manually
-by issuing the command `configure replace <backup_file>` on each device. A
-message should have been printed in the test output indicating the file name
-used for the backup, as well as how to restore the device and delete the backup.
+by issuing the commands `configure replace <backup_file>` and
+`copy <backup_of_startup> startup-config` on each device. A
+message should have been printed in the test output indicating the file names
+used for the backups, as well as how to restore the device and delete the backups.
 
 
 Developing Arista roles for Ansible
