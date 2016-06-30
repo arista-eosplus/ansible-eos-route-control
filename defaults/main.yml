@@ -1,5 +1,7 @@
 ---
 # defaults file for eos-route-control
+eos_save_running_config: true
+
 default_routemap_state: present
 default_static_route_state: present
 default_static_route_dist: 1
