@@ -116,7 +116,7 @@ testcases:
          continue 36
     absent: |
       route-map newmap05 permit 35
-         continute 86
+         continue 86
 
   - name: Delete routemap continue
     arguments:
@@ -134,7 +134,7 @@ testcases:
       route-map newmap06 permit 36
     absent: |
       route-map newmap06 permit 36
-         continute 37
+         continue 37
 
   - name: Set routemap match as
     arguments:
@@ -449,4 +449,4 @@ testcases:
          description newmap23 will be changed
          match as 53
          match metric 103
-         match distance 40
+         set distance 40

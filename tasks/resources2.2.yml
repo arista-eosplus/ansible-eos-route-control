@@ -1,0 +1,43 @@
+# Perform the EOS Routemap tasks under Ansible 2.2 or later
+# using the Ansible eos_config module
+
+- name: Arista EOS Routemap resources (Ansible >= 2.2)
+  eos_config:
+    src: routemaps.j2
+    defaults: true
+    config: "{{ _eos_config | default(omit) }}"
+    auth_pass: "{{ auth_pass | default(omit) }}"
+    authorize: "{{ authorize | default(omit) }}"
+    host: "{{ host | default(omit) }}"
+    password: "{{ password | default(omit) }}"
+    port: "{{ port | default(omit) }}"
+    provider: "{{ provider | default(omit) }}"
+    transport: 'cli'
+    use_ssl: "{{ use_ssl | default(omit) }}"
+    username: "{{ username | default(omit) }}"
+  notify: save running config
+  when:
+    item.name is defined and
+    item.action is defined and
+    item.seqno is defined
+  with_items: "{{ routemaps | default([]) }}"
+
+- name: Arista EOS IPv4 Static Route resources (Ansible >= 2.2)
+  eos_config:
+    src: ipv4_static_routes.j2
+    defaults: true
+    config: "{{ _eos_config | default(omit) }}"
+    auth_pass: "{{ auth_pass | default(omit) }}"
+    authorize: "{{ authorize | default(omit) }}"
+    host: "{{ host | default(omit) }}"
+    password: "{{ password | default(omit) }}"
+    port: "{{ port | default(omit) }}"
+    provider: "{{ provider | default(omit) }}"
+    transport: 'cli'
+    use_ssl: "{{ use_ssl | default(omit) }}"
+    username: "{{ username | default(omit) }}"
+  notify: save running config
+  when:
+    item.ip_dest is defined and
+    item.next_hop is defined
+  with_items: "{{ ipv4_static_routes | default([]) }}"
