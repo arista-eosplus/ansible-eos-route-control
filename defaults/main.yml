@@ -8,3 +8,6 @@ default_static_route_dist: 1
 default_static_route_tag: 0
 
 resource_version: '2.2'
+gather_config_commands:
+  - command: 'show running-config all | exclude \.\*'
+    output: 'text'
