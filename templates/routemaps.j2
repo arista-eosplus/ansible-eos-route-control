@@ -7,6 +7,10 @@
 {% set seqno = item.seqno %}
 {% set state = item.state | default(default_routemap_state) %}
 
+{# keep track of whether we need to send an 'exit' command or not #}
+{# use an array to have global scope access, an emtpy array is false #}
+{% set do_exit = [] %}
+
 {# set not_action to the opposite of the action that was passed in #}
 {% if action == 'permit' %}
    {% set not_action = 'deny' %}
@@ -51,6 +55,7 @@ no {{ routemap }}
    {# if we are changing the action on the routemap, duplicate the #}
    {# route-map entry to avoid deleting an empty block if this is the #}
    {# only operation #}
+      {% set _ = do_exit.append(true) %} {# this change requires a final 'exit' command #}
 
    {{ routemap }}
 
@@ -65,15 +70,21 @@ no {{ routemap }}
 
          {% if item.description %}
             {% if rm_desc and rm_desc.group(1) != item.description %}
+               {# a description is set and does not match the requested description #}
+               {% set _ = do_exit.append(true) %} {# this change requires a final 'exit' command #}
 
    no description
+   description {{ item.description }}
 
-            {% endif %}
+            {% elif rm_desc %}
+               {% set _ = do_exit.append(true) %} {# this change requires a final 'exit' command #}
 
    description {{ item.description }}
 
+            {% endif %}
          {% elif item.description == '' %}
             {% if rm_desc %}
+               {% set _ = do_exit.append(true) %} {# this change requires a final 'exit' command #}
 
    no description
 
@@ -84,12 +95,17 @@ no {{ routemap }}
       {# set continue value if needed #}
       {% if item.continue is defined %}
          {% if item.continue %}
+            {% set found = rm_block | join('\n') | re_search("^continue %s$" % item.continue) %}
+            {% if not found %}
+               {% set _ = do_exit.append(true) %} {# this change requires a final 'exit' command #}
+            {% endif %} {# not found #}
 
    continue {{ item.continue }}
 
          {% elif item.continue == '' %}
             {% set rm_cont = rm_block | join('\n') | re_search("^continue (\d*)$") %}
             {% if rm_cont %}
+               {% set _ = do_exit.append(true) %} {# this change requires a final 'exit' command #}
 
    no continue
 
@@ -103,6 +119,7 @@ no {{ routemap }}
          {% set current_match = rm_block | join('\n') | re_findall("^match (.*)$") %}
          {% set to_remove = current_match | difference(item.match) %}
          {% for match in to_remove %}
+            {% set _ = do_exit.append(true) %} {# this change requires a final 'exit' command #}
 
    no match {{ match }}
 
@@ -110,6 +127,10 @@ no {{ routemap }}
 
          {# add requested match statements #}
          {% for match in item.match %}
+            {% set found = rm_block | join('\n') | re_search("^match %s$" % match) %}
+            {% if not found %}
+               {% set _ = do_exit.append(true) %} {# this change requires a final 'exit' command #}
+            {% endif %} {# not found #}
 
    match {{ match }}
 
@@ -122,6 +143,7 @@ no {{ routemap }}
          {% set current_sets = rm_block | join('\n') | re_findall("^set (.*)$") %}
          {% set to_remove = current_sets | difference(item.set) %}
          {% for set_itm in to_remove %}
+            {% set _ = do_exit.append(true) %} {# this change requires a final 'exit' command #}
 
    no set {{ set_itm }}
 
@@ -129,6 +151,10 @@ no {{ routemap }}
 
          {# add requested set statements #}
          {% for set_itm in item.set %}
+            {% set found = rm_block | join('\n') | re_search("^set %s$" % set_itm) %}
+            {% if not found %}
+               {% set _ = do_exit.append(true) %} {# this change requires a final 'exit' command #}
+            {% endif %} {# not found #}
 
    set {{ set_itm }}
 
@@ -137,6 +163,7 @@ no {{ routemap }}
 
    {# -------------------------------------------------- #}
    {% else %} {# route-map doesn't exist - initialize it #}
+      {% set _ = do_exit.append(true) %} {# this change requires a final 'exit' command #}
 
    no description
 
@@ -176,6 +203,11 @@ no {{ routemap }}
    {# ----------------------------------- #}
    {# ...and save any changes with 'exit' #}
 
+   {# if we made any changes, send an exit command #}
+   {% if do_exit %}
+
    exit
+
+   {% endif %} {# do_exit #}
 
 {% endif %}
