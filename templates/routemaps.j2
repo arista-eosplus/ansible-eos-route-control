@@ -71,24 +71,21 @@ no {{ routemap }}
          {% if item.description %}
             {% if rm_desc and rm_desc.group(1) != item.description %}
                {# a description is set and does not match the requested description #}
+               {# need to delete the existing descriptiona and set the new description #}
                {% set _ = do_exit.append(true) %} {# this change requires a final 'exit' command #}
 
    no description
    description {{ item.description }}
 
-            {% elif rm_desc %}
-               {% set _ = do_exit.append(true) %} {# this change requires a final 'exit' command #}
+            {% endif %} {# rm_desc and rm_desc.group(1) #}
 
-   description {{ item.description }}
-
-            {% endif %}
          {% elif item.description == '' %}
             {% if rm_desc %}
                {% set _ = do_exit.append(true) %} {# this change requires a final 'exit' command #}
 
    no description
 
-            {% endif %}
+            {% endif %} {# rm_desc #}
          {% endif %}
       {% endif %} {# make description changes #}
 
